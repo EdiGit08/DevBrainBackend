@@ -22,7 +22,7 @@ async function extraerContenido(url) {
     $('meta[property="og:image"]').attr('content') ||
     null;
 
-  return { titulo, descripcion, imagen, url };
+  return { url, titulo, descripcion, imagen };
 }
 
 module.exports = { extraerContenido };
