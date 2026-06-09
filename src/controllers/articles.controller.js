@@ -1,5 +1,5 @@
 const { extraerContenido } = require('../services/extractor.service');
-const { guardarArticulo, listarArticulos, buscarArticulos } = require('../services/articles.service');
+const { guardarArticulo, listarArticulos, buscarArticulos, borrarArticulo } = require('../services/articles.service');
 const pool = require('../database/db');
 
 async function crearArticulo(req, res) {
@@ -65,9 +65,20 @@ async function obtenerArticuloById(req, res) {
   }
 }
 
+async function eliminarArticulo(req, res) {
+  try {
+    const { id } = req.params;
+    const articuloEliminado = await borrarArticulo(id);
+    res.json(articuloEliminado);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = 
 { 
   crearArticulo, 
   obtenerArticulos, 
-  obtenerArticuloById 
+  obtenerArticuloById,
+  eliminarArticulo
 };
