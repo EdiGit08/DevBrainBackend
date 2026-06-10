@@ -1,5 +1,5 @@
 const { extraerContenido } = require('../services/extractor.service');
-const { guardarArticulo, listarArticulos, buscarArticulos, borrarArticulo } = require('../services/articles.service');
+const { guardarArticulo, listarArticulos, buscarArticulos, borrarArticulo, asignarEtiqueta } = require('../services/articles.service');
 const pool = require('../database/db');
 
 async function crearArticulo(req, res) {
@@ -75,10 +75,22 @@ async function eliminarArticulo(req, res) {
   }
 }
 
+async function asignarTag(req, res) {
+  try {
+    const { id } = req.params;
+    const { tagId } = req.body;
+    const articuloActualizado = await asignarEtiqueta(id, tagId);
+    res.json(articuloActualizado);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = 
 { 
   crearArticulo, 
   obtenerArticulos, 
   obtenerArticuloById,
-  eliminarArticulo
+  eliminarArticulo,
+  asignarTag
 };

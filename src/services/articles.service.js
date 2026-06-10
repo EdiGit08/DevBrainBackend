@@ -3,8 +3,8 @@ const axios = require('axios');
 const path = require('path');
 
 async function guardarArticulo({ url, titulo, descripcion, imagen }) {
-  if (!imagen) {
-    imagen = 'https://placehold.co/600x400?text=Sin+imagen{ }'
+  if (!imagen || typeof imagen !== 'string' || !imagen.startsWith('http')) {
+    imagen = 'https://placehold.co/600x400?text=Sin+imagen+%7B+%7D';
   }
   
   const query = `
@@ -26,15 +26,19 @@ async function guardarArticulo({ url, titulo, descripcion, imagen }) {
   } catch (_) {
     console.log('n8n no disponible — artículo guardado igual')
   }
+
   return articulo
 }
 
 async function listarArticulos(pagina = 1, limite = 10) {
   const offset = (pagina - 1) * limite;
   const query = `
-    SELECT * FROM articles 
-    ORDER BY creado_en DESC 
-    LIMIT $1 OFFSET $2`;
+    SELECT a.*, t.nombre as tag_nombre
+    FROM articles a
+    LEFT JOIN tags t ON a.tag_id = t.id
+    ORDER BY a.creado_en DESC
+    LIMIT $1 OFFSET $2
+  `;
   const resultado = await pool.query(query, [limite, offset]);
   return resultado.rows;
 }
@@ -42,9 +46,11 @@ async function listarArticulos(pagina = 1, limite = 10) {
 async function buscarArticulos(busqueda, pagina = 1, limite = 10) {
   const offset = (pagina - 1) * limite;
   const query = `
-    SELECT * FROM articles 
-    WHERE titulo ILIKE $1 OR descripcion ILIKE $1
-    ORDER BY creado_en DESC
+    SELECT a.*, t.nombre as tag_nombre
+    FROM articles a
+    LEFT JOIN tags t ON a.tag_id = t.id
+    WHERE a.titulo ILIKE $1 OR a.descripcion ILIKE $1
+    ORDER BY a.creado_en DESC
     LIMIT $2 OFFSET $3
   `;
   const busquedaPattern = `%${busqueda}%`;
@@ -58,10 +64,19 @@ async function borrarArticulo(id) {
   return resultado.rows[0];
 }
 
+async function asignarEtiqueta(articuloId, tagId) {
+  const query = `
+    UPDATE articles SET tag_id = $1 WHERE id = $2 RETURNING *
+  `;
+  const resultado = await pool.query(query, [tagId, articuloId]);
+  return resultado.rows[0];
+}
+
 module.exports = 
 {
     guardarArticulo,
     listarArticulos,
     buscarArticulos,
-    borrarArticulo
+    borrarArticulo,
+    asignarEtiqueta
 };

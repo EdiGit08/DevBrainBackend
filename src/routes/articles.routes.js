@@ -4,7 +4,8 @@ const {
   crearArticulo, 
   obtenerArticulos, 
   obtenerArticuloById,
-  eliminarArticulo
+  eliminarArticulo,
+  asignarTag
 } = require('../controllers/articles.controller');
 
 router.post('/', crearArticulo);
@@ -14,5 +15,7 @@ router.get('/', obtenerArticulos);
 router.get('/:id', obtenerArticuloById);
 
 router.delete('/:id', eliminarArticulo);
+
+router.patch('/:id/tag', asignarTag);
 
 module.exports = router;
