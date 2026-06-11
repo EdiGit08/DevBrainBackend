@@ -30,31 +30,37 @@ async function guardarArticulo({ url, titulo, descripcion, imagen }) {
   return articulo
 }
 
-async function listarArticulos(pagina = 1, limite = 10) {
+async function listarArticulos(pagina = 1, limite = 10, tagId = null) {
   const offset = (pagina - 1) * limite;
   const query = `
     SELECT a.*, t.nombre as tag_nombre
     FROM articles a
     LEFT JOIN tags t ON a.tag_id = t.id
+    ${tagId ? 'WHERE a.tag_id = $3' : ''}
     ORDER BY a.creado_en DESC
     LIMIT $1 OFFSET $2
   `;
-  const resultado = await pool.query(query, [limite, offset]);
+  const valores = tagId ? [limite, offset, tagId] : [limite, offset]
+  const resultado = await pool.query(query, valores);
   return resultado.rows;
 }
 
-async function buscarArticulos(busqueda, pagina = 1, limite = 10) {
+async function buscarArticulos(busqueda, pagina = 1, limite = 10, tagId = null) {
   const offset = (pagina - 1) * limite;
   const query = `
     SELECT a.*, t.nombre as tag_nombre
     FROM articles a
     LEFT JOIN tags t ON a.tag_id = t.id
-    WHERE a.titulo ILIKE $1 OR a.descripcion ILIKE $1
+    WHERE (a.titulo ILIKE $1 OR a.descripcion ILIKE $1)
+    ${tagId ? 'AND a.tag_id = $4' : ''}
     ORDER BY a.creado_en DESC
     LIMIT $2 OFFSET $3
   `;
   const busquedaPattern = `%${busqueda}%`;
-  const resultado = await pool.query(query, [busquedaPattern, limite, offset]);
+  const valores = tagId
+    ? [busquedaPattern, limite, offset, tagId]
+    : [busquedaPattern, limite, offset]
+  const resultado = await pool.query(query, valores);
   return resultado.rows;
 }
 

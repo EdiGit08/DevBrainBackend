@@ -29,23 +29,22 @@ async function crearArticulo(req, res) {
 
 async function obtenerArticulos(req, res) {
   try {
-    const { search, pagina = 1, limite = 10 } = req.query;
-
+    const { search, pagina = 1, limite = 10, tagId } = req.query;
     let articulos;
-    
+
     if (search) {
-      articulos = await buscarArticulos(search, pagina, limite);
+      articulos = await buscarArticulos(search, pagina, limite, tagId || null)
     } else {
-      articulos = await listarArticulos(pagina, limite);
+      articulos = await listarArticulos(pagina, limite, tagId || null)
     }
 
     res.json({
       total: articulos.length,
       pagina: parseInt(pagina),
       articulos
-    });
+    })
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message })
   }
 }
 
